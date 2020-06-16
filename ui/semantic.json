@@ -2,9 +2,9 @@
   "base": "semantic",
   "paths": {
     "source": {
-      "config": "src/theme.config",
+      "config": "../semantic-ui/src/theme.config",
       "definitions": "src/definitions/",
-      "site": "src/site/",
+      "site": "../semantic-ui/src/site/",
       "themes": "src/themes/"
     },
     "output": {
