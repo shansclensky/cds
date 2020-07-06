@@ -9,12 +9,13 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/ovh/cds/engine/api/database/gorpmapping"
+	"github.com/ovh/cds/engine/gorpmapper"
 	"github.com/ovh/cds/sdk"
 	"github.com/ovh/cds/sdk/log"
 )
 
 type dbApplicationVariable struct {
-	gorpmapping.SignedEntity
+	gorpmapper.SignedEntity
 	ID            int64  `db:"id"`
 	ApplicationID int64  `db:"application_id"`
 	Name          string `db:"var_name"`
@@ -23,9 +24,9 @@ type dbApplicationVariable struct {
 	Type          string `db:"var_type"`
 }
 
-func (e dbApplicationVariable) Canonical() gorpmapping.CanonicalForms {
+func (e dbApplicationVariable) Canonical() gorpmapper.CanonicalForms {
 	var _ = []interface{}{e.ApplicationID, e.ID, e.Name, e.Type}
-	return gorpmapping.CanonicalForms{
+	return gorpmapper.CanonicalForms{
 		"{{print .ApplicationID}}{{print .ID}}{{.Name}}{{.Type}}",
 	}
 }

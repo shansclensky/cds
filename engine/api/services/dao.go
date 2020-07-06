@@ -55,10 +55,6 @@ func get(ctx context.Context, db gorp.SqlExecutor, q gorpmapping.Query) (*sdk.Se
 		return nil, sdk.WithStack(sdk.ErrNotFound)
 	}
 
-	if s.Name == "" {
-		return nil, sdk.WithStack(sdk.ErrNotFound)
-	}
-
 	return &s.Service, nil
 }
 

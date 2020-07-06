@@ -9,6 +9,7 @@ import (
 
 	"github.com/ovh/cds/engine/api/database/gorpmapping"
 	"github.com/ovh/cds/engine/api/group"
+	"github.com/ovh/cds/engine/gorpmapper"
 	"github.com/ovh/cds/sdk"
 	"github.com/ovh/cds/sdk/log"
 )
@@ -117,7 +118,7 @@ func LoadAllByGroupIDs(ctx context.Context, db gorp.SqlExecutor, groupIDs []int6
       WHERE worker_model.group_id = ANY(:groupIDs)
       AND ` + filter.SQL() + `
       ORDER BY worker_model.name
-    `).Args(filter.Args().Merge(gorpmapping.ArgsMap{
+    `).Args(filter.Args().Merge(gorpmapper.ArgsMap{
 			"groupIDs": pq.Int64Array(groupIDs),
 		}))
 	}

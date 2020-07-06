@@ -170,11 +170,11 @@ func putPostAdminServiceCallHandler(api *API, method string) service.Handler {
 
 func (api *API) getAdminDatabaseSignatureResume() service.Handler {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		var entities = gorpmapping.ListSignedEntities()
+		var entities = gorpmapping.Mapper.ListSignedEntities()
 		var resume = make(sdk.CanonicalFormUsageResume, len(entities))
 
 		for _, e := range entities {
-			data, err := gorpmapping.ListCanonicalFormsByEntity(api.mustDB(), e)
+			data, err := gorpmapping.Mapper.ListCanonicalFormsByEntity(api.mustDB(), e)
 			if err != nil {
 				return err
 			}
@@ -191,7 +191,7 @@ func (api *API) getAdminDatabaseSignatureTuplesBySigner() service.Handler {
 		entity := vars["entity"]
 		signer := vars["signer"]
 
-		pks, err := gorpmapping.ListTupleByCanonicalForm(api.mustDB(), entity, signer)
+		pks, err := gorpmapping.Mapper.ListTupleByCanonicalForm(api.mustDB(), entity, signer)
 		if err != nil {
 			return err
 		}
@@ -206,7 +206,7 @@ func (api *API) postAdminDatabaseSignatureRollEntityByPrimaryKey() service.Handl
 		entity := vars["entity"]
 		pk := vars["pk"]
 
-		if err := gorpmapping.RollSignedTupleByPrimaryKey(ctx, api.mustDB(), entity, pk); err != nil {
+		if err := gorpmapping.Mapper.RollSignedTupleByPrimaryKey(ctx, api.mustDB(), entity, pk); err != nil {
 			return err
 		}
 
@@ -216,7 +216,7 @@ func (api *API) postAdminDatabaseSignatureRollEntityByPrimaryKey() service.Handl
 
 func (api *API) getAdminDatabaseEncryptedEntities() service.Handler {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		return service.WriteJSON(w, gorpmapping.ListEncryptedEntities(), http.StatusOK)
+		return service.WriteJSON(w, gorpmapping.Mapper.ListEncryptedEntities(), http.StatusOK)
 	}
 }
 
@@ -225,7 +225,7 @@ func (api *API) getAdminDatabaseEncryptedTuplesByEntity() service.Handler {
 		vars := mux.Vars(r)
 		entity := vars["entity"]
 
-		pks, err := gorpmapping.ListTuplesByEntity(api.mustDB(), entity)
+		pks, err := gorpmapping.Mapper.ListTuplesByEntity(api.mustDB(), entity)
 		if err != nil {
 			return err
 		}
@@ -240,7 +240,7 @@ func (api *API) postAdminDatabaseRollEncryptedEntityByPrimaryKey() service.Handl
 		entity := vars["entity"]
 		pk := vars["pk"]
 
-		if err := gorpmapping.RollEncryptedTupleByPrimaryKey(api.mustDB(), entity, pk); err != nil {
+		if err := gorpmapping.Mapper.RollEncryptedTupleByPrimaryKey(api.mustDB(), entity, pk); err != nil {
 			return err
 		}
 

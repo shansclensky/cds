@@ -5,23 +5,23 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/go-gorp/gorp"
 	"github.com/lib/pq"
 
-	"github.com/go-gorp/gorp"
-
 	"github.com/ovh/cds/engine/api/database/gorpmapping"
+	"github.com/ovh/cds/engine/gorpmapper"
 	"github.com/ovh/cds/sdk"
 	"github.com/ovh/cds/sdk/log"
 )
 
 type dbApplication struct {
-	gorpmapping.SignedEntity
+	gorpmapper.SignedEntity
 	sdk.Application
 }
 
-func (e dbApplication) Canonical() gorpmapping.CanonicalForms {
+func (e dbApplication) Canonical() gorpmapper.CanonicalForms {
 	var _ = []interface{}{e.ProjectID, e.Name}
-	return gorpmapping.CanonicalForms{
+	return gorpmapper.CanonicalForms{
 		"{{print .ProjectID}}{{.Name}}",
 	}
 }

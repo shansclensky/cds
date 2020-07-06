@@ -7,18 +7,19 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/ovh/cds/engine/api/database/gorpmapping"
+	"github.com/ovh/cds/engine/gorpmapper"
 	"github.com/ovh/cds/sdk"
 	"github.com/ovh/cds/sdk/log"
 )
 
 type dbApplicationKey struct {
-	gorpmapping.SignedEntity
+	gorpmapper.SignedEntity
 	sdk.ApplicationKey
 }
 
-func (e dbApplicationKey) Canonical() gorpmapping.CanonicalForms {
+func (e dbApplicationKey) Canonical() gorpmapper.CanonicalForms {
 	var _ = []interface{}{e.ApplicationID, e.ID, e.Name}
-	return gorpmapping.CanonicalForms{
+	return gorpmapper.CanonicalForms{
 		"{{print .ApplicationID}}{{print .ID}}{{.Name}}",
 	}
 }
@@ -70,7 +71,7 @@ func getAllKeys(db gorp.SqlExecutor, query gorpmapping.Query) ([]sdk.Application
 // LoadAllKeys load all keys for the given application
 func LoadAllKeys(db gorp.SqlExecutor, appID int64) ([]sdk.ApplicationKey, error) {
 	query := gorpmapping.NewQuery(`
-	SELECT * 
+	SELECT *
 	FROM application_key
 	WHERE application_id = $1`).Args(appID)
 	return getAllKeys(db, query)
@@ -97,7 +98,7 @@ func LoadAllKeysWithPrivateContent(db gorp.SqlExecutor, appID int64) ([]sdk.Appl
 
 func loadKey(db gorp.SqlExecutor, id int64, keyName string) (*sdk.ApplicationKey, error) {
 	query := gorpmapping.NewQuery(`
-	SELECT * 
+	SELECT *
 	FROM application_key
 	WHERE id = $1 AND name = $2`).Args(id, keyName)
 	var k dbApplicationKey

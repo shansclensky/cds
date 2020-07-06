@@ -7,6 +7,7 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/ovh/cds/engine/api/database/gorpmapping"
+	"github.com/ovh/cds/engine/gorpmapper"
 	"github.com/ovh/cds/sdk"
 	"github.com/ovh/cds/sdk/log"
 )
@@ -15,16 +16,16 @@ type dbIntegration sdk.IntegrationConfig
 
 // application_deployment_strategy
 type dbApplicationDeploymentStrategy struct {
-	gorpmapping.SignedEntity
+	gorpmapper.SignedEntity
 	ID                   int64         `db:"id"`
 	ProjectIntegrationID int64         `db:"project_integration_id"`
 	ApplicationID        int64         `db:"application_id"`
 	Config               dbIntegration `db:"cipher_config" gorpmapping:"encrypted,ProjectIntegrationID,ApplicationID"` //config
 }
 
-func (e dbApplicationDeploymentStrategy) Canonical() gorpmapping.CanonicalForms {
+func (e dbApplicationDeploymentStrategy) Canonical() gorpmapper.CanonicalForms {
 	var _ = []interface{}{e.ProjectIntegrationID, e.ApplicationID}
-	return gorpmapping.CanonicalForms{
+	return gorpmapper.CanonicalForms{
 		"{{print .ProjectIntegrationID}}{{print .ApplicationID}}",
 	}
 }

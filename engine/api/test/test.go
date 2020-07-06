@@ -17,11 +17,11 @@ import (
 
 	"github.com/ovh/cds/engine/api/authentication"
 	"github.com/ovh/cds/engine/api/cache"
-	"github.com/ovh/cds/engine/api/database"
 	"github.com/ovh/cds/engine/api/database/gorpmapping"
+	"github.com/ovh/cds/engine/database"
+	"github.com/ovh/cds/engine/gorpmapper"
 	"github.com/ovh/cds/sdk"
 	"github.com/ovh/cds/sdk/log"
-	"github.com/ovh/configstore"
 )
 
 //DBDriver is exported for testing purpose
@@ -82,17 +82,24 @@ RvySYHtJvP64+7ncMqNjMnX8MbJZdoW3FE4gKomVof26/oUk/zHKNn5BECPIqEQv
 XeJEyyEjosSa3qWACDYorGMnzRXdeJa5H7J0W+G3x4tH2LMW8VHS
 -----END RSA PRIVATE KEY-----`)
 
-// SetupPG setup PG DB for test
+// SetupPG setup PG DB for test and use gorpmapping singleton's mapper.
 func SetupPG(t *testing.T, bootstrapFunc ...Bootstrapf) (*gorp.DbMap, cache.Store) {
-	db, cache, cancel := SetupPGToCancel(t, bootstrapFunc...)
+	db, cache, cancel := SetupPGToCancel(t, gorpmapping.Mapper, sdk.TypeAPI, bootstrapFunc...)
+	t.Cleanup(cancel)
+	return db, cache
+}
+
+// SetupPG setup PG DB for test and return a new mapper.
+func SetupPGWithMapper(t *testing.T, m *gorpmapper.Mapper, serviceType string, bootstrapFunc ...Bootstrapf) (*gorp.DbMap, cache.Store) {
+	db, cache, cancel := SetupPGToCancel(t, m, serviceType, bootstrapFunc...)
 	t.Cleanup(cancel)
 	return db, cache
 }
 
 // SetupPGToCancel setup PG DB for test
-func SetupPGToCancel(t log.Logger, bootstrapFunc ...Bootstrapf) (*gorp.DbMap, cache.Store, func()) {
+func SetupPGToCancel(t log.Logger, m *gorpmapper.Mapper, serviceType string, bootstrapFunc ...Bootstrapf) (*gorp.DbMap, cache.Store, func()) {
 	log.SetLogger(t)
-	cfg := LoadTestingConf(t)
+	cfg := LoadTestingConf(t, serviceType)
 	DBDriver = cfg["dbDriver"]
 	dbUser = cfg["dbUser"]
 	dbRole = cfg["dbRole"]
@@ -132,11 +139,10 @@ func SetupPGToCancel(t log.Logger, bootstrapFunc ...Bootstrapf) (*gorp.DbMap, ca
 			},
 		},
 	}
-	configstore.AllowProviderOverride()
 
-	signatureKeyConfig := sigKeys.GetKeys(gorpmapping.KeySignIdentifier)
-	encryptionKeyConfig := encryptKeys.GetKeys(gorpmapping.KeyEcnryptionIdentifier)
-	if err := gorpmapping.ConfigureKeys(&signatureKeyConfig, &encryptionKeyConfig); err != nil {
+	signatureKeyConfig := sigKeys.GetKeys(gorpmapper.KeySignIdentifier)
+	encryptionKeyConfig := encryptKeys.GetKeys(gorpmapper.KeyEcnryptionIdentifier)
+	if err := m.ConfigureKeys(&signatureKeyConfig, &encryptionKeyConfig); err != nil {
 		t.Fatalf("cannot setup database keys: %v", err)
 		return nil, nil, func() {}
 	}
@@ -155,7 +161,7 @@ func SetupPGToCancel(t log.Logger, bootstrapFunc ...Bootstrapf) (*gorp.DbMap, ca
 	}
 
 	for _, f := range bootstrapFunc {
-		if err := f(context.TODO(), sdk.DefaultValues{}, DBConnectionFactory.GetDBMap); err != nil {
+		if err := f(context.TODO(), sdk.DefaultValues{}, DBConnectionFactory.GetDBMap(m)); err != nil {
 			log.Error(context.TODO(), "Error: %v", err)
 			return nil, nil, func() {}
 		}
@@ -171,7 +177,7 @@ func SetupPGToCancel(t log.Logger, bootstrapFunc ...Bootstrapf) (*gorp.DbMap, ca
 		store.Client = nil
 	}
 
-	dbMap := DBConnectionFactory.GetDBMap()
+	dbMap := DBConnectionFactory.GetDBMap(m)()
 	if dbMap == nil {
 		t.Fatalf("unable to init database connection")
 	}
@@ -180,11 +186,11 @@ func SetupPGToCancel(t log.Logger, bootstrapFunc ...Bootstrapf) (*gorp.DbMap, ca
 }
 
 // LoadTestingConf loads test configuration tests.cfg.json
-func LoadTestingConf(t log.Logger) map[string]string {
+func LoadTestingConf(t log.Logger, serviceType string) map[string]string {
 	var f string
 	u, _ := user.Current()
 	if u != nil {
-		f = path.Join(u.HomeDir, ".cds", "tests.cfg.json")
+		f = path.Join(u.HomeDir, ".cds", serviceType+".tests.cfg.json")
 	}
 
 	if _, err := os.Stat(f); err == nil {

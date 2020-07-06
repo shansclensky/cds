@@ -128,7 +128,7 @@ func (c *Common) Register(ctx context.Context, cfg sdk.ServiceConfig) error {
 					continue
 				}
 			}
-			return sdk.WrapError(err, "Register>")
+			return sdk.WithStack(err)
 		}
 		c.ServiceInstance = srv2
 		break

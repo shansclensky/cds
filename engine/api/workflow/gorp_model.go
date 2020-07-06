@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ovh/cds/engine/api/database/gorpmapping"
+	"github.com/ovh/cds/engine/gorpmapper"
 
 	"github.com/ovh/cds/sdk"
 )
@@ -217,13 +218,13 @@ type dbNodeJoinData sdk.NodeJoin
 type dbNodeHookData sdk.NodeHook
 
 type dbWorkflowRunSecret struct {
-	gorpmapping.SignedEntity
+	gorpmapper.SignedEntity
 	sdk.WorkflowRunSecret
 }
 
-func (e dbWorkflowRunSecret) Canonical() gorpmapping.CanonicalForms {
+func (e dbWorkflowRunSecret) Canonical() gorpmapper.CanonicalForms {
 	var _ = []interface{}{e.ID, e.WorkflowRunID, e.Context}
-	return gorpmapping.CanonicalForms{
+	return gorpmapper.CanonicalForms{
 		"{{print .ID}}{{.WorkflowRunID}}{{.Context}}",
 	}
 }
