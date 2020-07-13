@@ -48,7 +48,7 @@ build: $(TARGET_DIR)
 
 publish:
 	@echo "Updating plugin..."
-	$(CDSCTL) admin plugins import $(TARGET_DIR)/$(TARGET_NAME).yml
+	$(CDSCTL) -c prod admin plugins import $(TARGET_DIR)/$(TARGET_NAME).yml
 	@for GOOS in $(TARGET_OS); do \
 		for GOARCH in $(TARGET_ARCH); do \
 			EXTENSION=""; \

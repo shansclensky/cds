@@ -96,13 +96,21 @@ func (e *arsenalDeploymentPlugin) Deploy(ctx context.Context, q *integrationplug
 		fmt.Printf("Error parsing cds.integration.retry.max: %v. Default value will be used\n", err)
 		maxRetry = 10
 	}
+
+	fmt.Printf("With config %+v...\n", q.GetOptions())
+
 	delayRetry, err := strconv.Atoi(delayRetryStr)
 	if err != nil {
 		fmt.Printf("Error parsing cds.integration.retry.max: %v. Default value will be used\n", err)
 		delayRetry = 5
 	}
 
-	deployData, err := interpolate.Do(deployData, q.GetOptions())
+	deployDataTemp, err := interpolate.Do(deployData, q.GetOptions())
+	if err != nil {
+		return fail("Error: unable to interpolate data: %v. Please check you integration configuration\n", err)
+	}
+
+	deployData, err := interpolate.Do(deployDataTemp, q.GetOptions())
 	if err != nil {
 		return fail("Error: unable to interpolate data: %v. Please check you integration configuration\n", err)
 	}
